@@ -2,6 +2,7 @@
 #include <QApplication>
 
 // Questa e` una modifica
+// Seconda Modifica
 
 int main(int argc, char *argv[])
 {

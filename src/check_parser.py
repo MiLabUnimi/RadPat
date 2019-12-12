@@ -21,4 +21,6 @@ def chk_parser(parser):
     #         raise NameError("Parser Error: Invalid CrossPolar definition. Tree files should be expected [Copola], [45 plane CX], [-45 plane CX]")
 
 
-    print(args)
+#    print(args)
+
+

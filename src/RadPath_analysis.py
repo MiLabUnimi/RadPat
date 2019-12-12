@@ -29,7 +29,9 @@ if __name__ == '__main__':
     parser.add_argument('-cx', '--cross_level', action='store_true', help="Return the polarization cross level" )
     parser.add_argument('-g', '--show-graphic', action='store_true', help="Show the plot in a temporary canvas")
     parser.add_argument('-gt', '--graph-tile', default="Radiation Pattern", type=str, help="Plot Title")
+    parser.add_argument('-ref_path', '--reference_path', default="", type=str, help="Path that contains the Simulated references")
     parser.add_argument('-ref', '--reference', default="", type=str, help="Simulated reference" )
+    parser.add_argument('-show_ref', '--show_reference', action='store_true', help="Show the reference graphic")
     parser.add_argument('-pf', '--polynomial-fit', action='store_true', help="Main beam polynomial fit")
     parser.add_argument('-po', '--polynomial-order', default=2, type=int, help="Polynomial fit order")
 
@@ -47,12 +49,9 @@ if __name__ == '__main__':
     # Cut_name // Pandas_dataset with (Freq, Pos, Ampl)
     df = open_file(args_main)
 
-
-
     # Normalized Beam
     if args_main.normalized:
         df = beam_normalize(df)
-
 
     # FWHM evaluations
     # if args_main.fwhm:
@@ -74,13 +73,40 @@ if __name__ == '__main__':
 
         print(df_cross)
 
+    if args_main.reference != "":
+        df_ref = load_reference(args_main)
+        # here: the comparison function(s?)
+    else:
+        print("No reference..")
 
-    # # Print Log_File
-    #
-    #
     # Show Graphic
     if args_main.show_graphic:
-        for i in range(0, len(df.Cut)):
-            for j in range(0, len(df.Data[i].Freq)):
-                plt.plot(df.Data[i].Positions[j], df.Data[i].Ampl[j])
+        for freq in range(0, 3):
+            plt.figure(freq)
+            plt.title(freq)
+            for cut in range(0, 6):
+                plt.plot(df.Data[cut].Positions[freq], df.Data[cut].Ampl[freq])
+        plt.show()
+
+    if args_main.show_reference:
+        # just to remeber
+        # 0      KIDS_45
+        # 1       KIDS_H
+        # 2     KIDS_m45
+        # 3       KIDS_E
+        # 4    KIDS_Xm45
+        # 5     KIDS_X45
+        if (args_main.reference.split("E")[1]).split(",")[1] == "0":
+            cut = 1
+        if (args_main.reference.split("E")[1]).split(",")[1] == "90":
+            cut = 3
+        if (args_main.reference.split("E")[1]).split(",")[1] == "45":
+            cut = 0
+        if (args_main.reference.split("E")[1]).split(",")[1] == "m45":
+            cut = 2
+        for freq in range(0, 3):
+            plt.figure(freq)
+            plt.title(freq)
+            plt.plot(df.Data[cut].Positions[freq], df.Data[cut].Ampl[freq])
+            plt.plot(df_ref.Positions[freq], df_ref.Ampl[freq])
         plt.show()

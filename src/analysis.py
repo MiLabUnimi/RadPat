@@ -84,3 +84,35 @@ def get_cross_level(df):
         df_cx = df_cx.append({'Freq':freq, 'Cross':max_cx}, ignore_index=True)
 
     return df_cx
+
+
+def load_reference(args):
+
+    df_ref = pd.DataFrame(columns=['Freq', 'Positions', 'Ampl'])
+
+    ref_path  = args.reference_path
+    ref_freq  = args.reference.split("E")
+
+    for freq in ref_freq:
+        print(freq)
+        ref_specs = freq.split(",")
+        file_name = "Phi"+ref_specs[1]+"_"+ref_specs[0]+"GHz.txt"
+
+
+
+        try:
+            print(file_name)
+            a = np.loadtxt(ref_path+"/"+file_name, skiprows=2)
+            Pos  = a[:,0]
+            Ampl = a[:,2]
+            print("Successfuly loaded")
+        except IOError as e:
+            print("File not found...")
+
+        print("Beam normalize...")
+        Ampl = Ampl - np.amax(Ampl)
+
+        print("Append the frequency into the DataFrame")
+        df_ref = df_ref.append({'Freq':ref_specs[0], 'Positions':Pos, 'Ampl':Ampl}, ignore_index=True)
+
+    return df_ref

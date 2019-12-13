@@ -32,8 +32,10 @@ if __name__ == '__main__':
     parser.add_argument('-ref_path', '--reference_path', default="", type=str, help="Path that contains the Simulated references")
     parser.add_argument('-ref', '--reference', default="", type=str, help="Simulated reference" )
     parser.add_argument('-show_ref', '--show_reference', action='store_true', help="Show the reference graphic")
+    parser.add_argument('-show_diff', '--show_difference', action='store_true', help='Show the difference between Simulation and Meausured')
     parser.add_argument('-pf', '--polynomial-fit', action='store_true', help="Main beam polynomial fit")
     parser.add_argument('-po', '--polynomial-order', default=2, type=int, help="Polynomial fit order")
+    parser.add_argument('-shift', '--shift_positions', default=0.0, type=float, help='Shift angle of the reference')
 
     args_main = parser.parse_args()
 
@@ -73,12 +75,6 @@ if __name__ == '__main__':
 
         print(df_cross)
 
-    if args_main.reference != "":
-        df_ref = load_reference(args_main)
-        # here: the comparison function(s?)
-    else:
-        print("No reference..")
-
     # Show Graphic
     if args_main.show_graphic:
         for freq in range(0, 3):
@@ -88,7 +84,9 @@ if __name__ == '__main__':
                 plt.plot(df.Data[cut].Positions[freq], df.Data[cut].Ampl[freq])
         plt.show()
 
-    if args_main.show_reference:
+    if args_main.reference != "":
+        # Load the reference file
+        df_ref = load_reference(args_main)
         # just to remeber
         # 0      KIDS_45
         # 1       KIDS_H
@@ -104,9 +102,21 @@ if __name__ == '__main__':
             cut = 0
         if (args_main.reference.split("E")[1]).split(",")[1] == "m45":
             cut = 2
-        for freq in range(0, 3):
-            plt.figure(freq)
-            plt.title(freq)
-            plt.plot(df.Data[cut].Positions[freq], df.Data[cut].Ampl[freq])
-            plt.plot(df_ref.Positions[freq], df_ref.Ampl[freq])
-        plt.show()
+
+        df_ref_diff = get_diff(df, df_ref, cut)
+
+        if args_main.show_reference:
+            for freq in range(0, 3):
+                plt.figure(freq)
+                plt.title(freq)
+                plt.plot(df.Data[cut].Positions[freq], df.Data[cut].Ampl[freq])
+                plt.plot(df_ref.Positions[freq], df_ref.Ampl[freq])
+            plt.show()
+
+        if args_main.show_difference:
+            for freq in range(0, 3):
+                plt.title("Difference Simulated // Measured")
+                plt.plot(df_ref_diff.Positions[freq], df_ref_diff.AmplDiff[freq])
+            plt.show()
+    else:
+        print("No reference..")

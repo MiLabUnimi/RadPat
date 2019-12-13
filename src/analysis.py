@@ -2,7 +2,7 @@ import h5py
 import glob
 import numpy as np
 import pandas as pd
-
+import matplotlib.pylab as plt
 
 # Read the CUTs and split it into different
 # pandas dataframes
@@ -103,7 +103,7 @@ def load_reference(args):
         try:
             print(file_name)
             a = np.loadtxt(ref_path+"/"+file_name, skiprows=2)
-            Pos  = a[:,0]
+            Pos  = a[:,0] + args.shift_positions
             Ampl = a[:,2]
             print("Successfuly loaded")
         except IOError as e:
@@ -116,3 +116,19 @@ def load_reference(args):
         df_ref = df_ref.append({'Freq':ref_specs[0], 'Positions':Pos, 'Ampl':Ampl}, ignore_index=True)
 
     return df_ref
+
+
+def get_diff(df, df_ref, cut):
+
+    df_diff = pd.DataFrame(columns=['Freq', 'Positions', 'AmplDiff'])
+
+    for freq in range(0, 3):
+        a = np.round(df.Data[cut].Positions[freq], decimals=1)
+        idx = np.ones(len(df_ref.Positions[freq]))*False
+        for i in a:
+            idx += (df_ref.Positions[freq] == i)
+        idx = idx.astype(bool)
+        Ampl_diff = (df.Data[cut].Ampl[freq]) - ((df_ref.Ampl[freq])[idx])
+        df_diff = df_diff.append({'Freq':freq, 'Positions':df.Data[cut].Positions[freq], 'AmplDiff':Ampl_diff}, ignore_index=True)
+
+    return df_diff
